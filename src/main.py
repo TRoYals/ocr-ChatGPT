@@ -21,7 +21,8 @@ SECRET_KEY = config.get('API', 'SECRET_KEY')
 
 
 def main():
-
+    import png2csv
+    png2csv.main()
     return 
 
 if __name__ == '__main__':
