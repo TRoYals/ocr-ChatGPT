@@ -10,13 +10,14 @@ import json
 import shutil
 
 config = configparser.ConfigParser()
-config.read(os.path.join(main_dir, "config.ini"),encoding='utf-8')
+config.read(os.path.join(main_dir, "config.ini"), encoding="utf-8")
 
 API_KEY = config.get("API", "API_KEY")
 SECRET_KEY = config.get("API", "SECRET_KEY")
 CHATGPT_TOKEN = config.get("API", "CHATGPT_TOKEN")
 
 PROMPT_BASIC_INFO = config.get("PROMPT", "PROMPT_BASIC_INFO")
+PROMPT_SUBTABLE = config.get("PROMPT", "PROMPT_SUBTABLE")
 
 
 def chatGPT_request(content, prompt=PROMPT_BASIC_INFO, token=CHATGPT_TOKEN):
@@ -56,6 +57,22 @@ def extract_json_from_str(input_str):
     return json_data
 
 
+def get_access_token():
+    url = "https://aip.baidubce.com/oauth/2.0/token"
+    params = {
+        "grant_type": "client_credentials",
+        "client_id": API_KEY,
+        "client_secret": SECRET_KEY,
+    }
+    r = requests.get(url, params=params)
+    print(r.status_code)
+    if r.status_code == 200:
+        print(r.json()["access_token"])
+        return r.json()["access_token"]
+    else:
+        return None
+
+
 def json_to_csv(json_data, filename_path):
     """
     将 json 数据写入 csv 文件
@@ -70,10 +87,6 @@ def json_to_csv(json_data, filename_path):
         writer.writerow(json_data)
 
 
-
-
-
-
 def combine_xlsx(folder_path):
     combined_data = pd.DataFrame()
 
@@ -83,10 +96,9 @@ def combine_xlsx(folder_path):
             file_path = os.path.join(folder_path, file)
             page_df = pd.read_excel(file_path, engine="openpyxl")
             combined_data = pd.concat([combined_data, page_df], ignore_index=True)
-    
+
     combined_data.to_excel(os.path.join(folder_path, "combined.xlsx"), index=False)
     return
-
 
 
 def get_text_from_xls_url(url):

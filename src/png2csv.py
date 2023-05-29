@@ -6,7 +6,13 @@ import requests
 import base64
 import pandas as pd
 import time
-from utils import json_to_csv, combine_xlsx, get_text_from_xls_url, chatGPT_request
+from utils import (
+    json_to_csv,
+    combine_xlsx,
+    get_text_from_xls_url,
+    chatGPT_request,
+    get_access_token,
+)
 
 
 def main():
@@ -23,8 +29,7 @@ def main():
 
     combine_xlsx(output_folder)
     basic_info = chatGPT_request(text)
-    json_string = re.search(r"\{(.*?)\}", basic_info, re.DOTALL).group()
-    json_data = json.loads(json_string)
+
     json_to_csv(json_data, os.path.join(output_folder, "basic_info.csv"))
 
     return
@@ -32,22 +37,6 @@ def main():
 
 def process_raw_table():
     return
-
-
-def get_access_token():
-    url = "https://aip.baidubce.com/oauth/2.0/token"
-    params = {
-        "grant_type": "client_credentials",
-        "client_id": API_KEY,
-        "client_secret": SECRET_KEY,
-    }
-    r = requests.get(url, params=params)
-    print(r.status_code)
-    if r.status_code == 200:
-        print(r.json()["access_token"])
-        return r.json()["access_token"]
-    else:
-        return None
 
 
 def png_to_xlsx(
