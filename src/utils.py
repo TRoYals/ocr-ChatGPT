@@ -10,7 +10,7 @@ import json
 import shutil
 
 config = configparser.ConfigParser()
-config.read(os.path.join(main_dir, "config.ini"))
+config.read(os.path.join(main_dir, "config.ini"),encoding='utf-8')
 
 API_KEY = config.get("API", "API_KEY")
 SECRET_KEY = config.get("API", "SECRET_KEY")
@@ -70,20 +70,23 @@ def json_to_csv(json_data, filename_path):
         writer.writerow(json_data)
 
 
+
+
+
+
 def combine_xlsx(folder_path):
-    """
-    将指定文件夹下的所有 xlsx 文件合并为一个 xlsx 文件
-    """
     combined_data = pd.DataFrame()
 
     files = os.listdir(folder_path)
     for file in files:
         if file.endswith(".xlsx"):
             file_path = os.path.join(folder_path, file)
-            page_df = pd.read_excel(file_path, engine="openpyxl")  # 指定解析引擎为 openpyxl
-            combined_data = combined_data.append(page_df, ignore_index=True)
+            page_df = pd.read_excel(file_path, engine="openpyxl")
+            combined_data = pd.concat([combined_data, page_df], ignore_index=True)
+    
     combined_data.to_excel(os.path.join(folder_path, "combined.xlsx"), index=False)
     return
+
 
 
 def get_text_from_xls_url(url):
