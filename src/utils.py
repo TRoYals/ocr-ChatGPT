@@ -16,6 +16,7 @@ from config import (
     PROMPT_SUBTABLE,
     CHATGPT_TOKEN,
 )
+import time
 
 # config = configparser.ConfigParser()
 # config.read(os.path.join(main_dir, "config.ini"), encoding="utf-8")
@@ -37,7 +38,8 @@ def chatGPT_request(
     """
     openai.api_key = token
     message = f"{prompt}\n{content}"
-
+    with open(os.path.join(output_folder, "message.txt"), "w") as file:
+        file.write(message)
     for attempt in range(max_attempts):
         try:
             response = openai.ChatCompletion.create(
@@ -47,6 +49,8 @@ def chatGPT_request(
                 ],
             )
             answer = response.choices[0].message.content.strip()
+            with open(os.path.join(output_folder, "answer.txt"), "w") as file:
+                file.write(answer)
             return answer
 
         except Exception as e:
@@ -108,17 +112,46 @@ def json_to_csv(json_data, filename_path):
         writer.writerow(json_data)
 
 
-def combine_xlsx(folder_path):
-    combined_data = pd.DataFrame()
+def combine_xlsx(folder_path, seperate=True):
+    if not seperate:
+        combined_data = pd.DataFrame()
 
-    files = os.listdir(folder_path)
-    for file in files:
-        if file.endswith(".xlsx"):
-            file_path = os.path.join(folder_path, file)
-            page_df = pd.read_excel(file_path, engine="openpyxl")
-            combined_data = pd.concat([combined_data, page_df], ignore_index=True)
+        files = os.listdir(folder_path)
+        for file in files:
+            if file.endswith(".xlsx"):
+                file_path = os.path.join(folder_path, file)
+                page_df = pd.read_excel(file_path, engine="openpyxl")
+                combined_data = pd.concat([combined_data, page_df], ignore_index=True)
 
-    combined_data.to_excel(os.path.join(folder_path, "combined.xlsx"), index=False)
+        combined_data.to_excel(os.path.join(folder_path, "combined.xlsx"), index=False)
+
+    else:
+        combined_datas = []  # List of dataframes
+        files = os.listdir(folder_path)
+        for file in files:
+            if file.endswith(".xlsx"):
+                file_path = os.path.join(folder_path, file)
+                page_df = pd.read_excel(file_path, engine="openpyxl")
+
+                # Loop through the combined_datas
+                for combined in combined_datas:
+                    # If the columns match, append to the dataframe and break the loop
+                    if (
+                        len(combined.columns) == len(page_df.columns)
+                        and (combined.columns == page_df.columns).all()
+                    ):
+                        combined = pd.concat([combined, page_df], ignore_index=True)
+                        break
+                # If no matching dataframe is found, create a new one
+                else:
+                    combined_datas.append(page_df)
+
+        # Save each dataframe to a separate excel file
+        for i, combined in enumerate(combined_datas, 1):
+            combined.to_excel(
+                os.path.join(folder_path, f"combined_{i}.xlsx"), index=False
+            )
+
     return
 
 
@@ -162,4 +195,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # combine_xlsx(output_folder)
+    gpt_change_file_header(os.path.join(output_folder, "combined_1.xlsx"))

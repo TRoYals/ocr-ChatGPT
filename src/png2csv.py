@@ -75,6 +75,9 @@ def png_to_xlsx(
     response = requests.get(dataurl)
     with open(output_csv_path, "wb") as file:
         df = pd.read_excel(response.content)
+        # 去除重复表头
+        header = df.columns.tolist()
+        df = df[~df.eq(header).all(axis=1)]
         df.to_excel(output_csv_path, index=False)
     if need_process_text:
         need_process_text += get_text_from_xls_url(dataurl)
