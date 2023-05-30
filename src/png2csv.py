@@ -12,6 +12,7 @@ from utils import (
     get_text_from_xls_url,
     chatGPT_request,
     get_access_token,
+    extract_json_from_str,
 )
 
 
@@ -29,6 +30,8 @@ def main():
 
     combine_xlsx(output_folder)
     basic_info = chatGPT_request(text)
+    json_data = extract_json_from_str(basic_info)
+    json_data = json.loads(json_data)
 
     json_to_csv(json_data, os.path.join(output_folder, "basic_info.csv"))
 
