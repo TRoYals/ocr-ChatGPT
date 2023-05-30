@@ -1,6 +1,6 @@
 import json
 import re
-from main import API_KEY, SECRET_KEY, output_folder, static_folder
+from config import API_KEY, SECRET_KEY, output_folder, static_folder
 import os
 import requests
 import base64
@@ -31,8 +31,7 @@ def main():
     combine_xlsx(output_folder)
     basic_info = chatGPT_request(text)
     json_data = extract_json_from_str(basic_info)
-    json_data = json.loads(json_data)
-
+    print(json_data)
     json_to_csv(json_data, os.path.join(output_folder, "basic_info.csv"))
 
     return
@@ -67,6 +66,7 @@ def png_to_xlsx(
             time.sleep(2)
             res = requests.post(url, data=params, headers=headers)
             result = res.json()
+            print(result)
             attempts += 1
         else:
             return "Error: OCR request failed after 3 attempts."

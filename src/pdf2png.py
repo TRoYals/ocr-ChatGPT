@@ -1,4 +1,4 @@
-from main import static_folder, user_file_folder
+from config import user_file_folder, static_folder
 import fitz
 import os
 

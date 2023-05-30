@@ -1,5 +1,5 @@
 from utils import get_access_token, chatGPT_request, PROMPT_SUBTABLE, json_to_csv
-from main import output_folder, static_folder
+from config import output_folder, static_folder
 import os
 import base64
 import requests
@@ -42,7 +42,10 @@ def main():
     for file in os.listdir(static_folder):
         if file.endswith(".jpg") or file.endswith(".png"):
             text = jpg_to_para(token, os.path.join(static_folder, file), "")
+        print(text)
+        print(PROMPT_SUBTABLE)
         chat_answer = chatGPT_request(text, PROMPT_SUBTABLE)
+        print(chat_answer)
         data = json.loads(chat_answer)
         for item in data["products"]:
             json_to_csv(item, os.path.join(output_folder, "subtable.csv"))

@@ -1,6 +1,5 @@
 import configparser
 import os
-from main import main_dir
 import requests
 import openai
 import re
@@ -8,16 +7,25 @@ import csv
 import pandas as pd
 import json
 import shutil
+from config import (
+    API_KEY,
+    SECRET_KEY,
+    output_folder,
+    static_folder,
+    PROMPT_BASIC_INFO,
+    PROMPT_SUBTABLE,
+    CHATGPT_TOKEN,
+)
 
-config = configparser.ConfigParser()
-config.read(os.path.join(main_dir, "config.ini"), encoding="utf-8")
+# config = configparser.ConfigParser()
+# config.read(os.path.join(main_dir, "config.ini"), encoding="utf-8")
 
-API_KEY = config.get("API", "API_KEY")
-SECRET_KEY = config.get("API", "SECRET_KEY")
-CHATGPT_TOKEN = config.get("API", "CHATGPT_TOKEN")
+# API_KEY = config.get("API", "API_KEY")
+# SECRET_KEY = config.get("API", "SECRET_KEY")
+# CHATGPT_TOKEN = config.get("API", "CHATGPT_TOKEN")
 
-PROMPT_BASIC_INFO = config.get("PROMPT", "PROMPT_BASIC_INFO")
-PROMPT_SUBTABLE = config.get("PROMPT", "PROMPT_SUBTABLE")
+# PROMPT_BASIC_INFO = config.get("PROMPT", "PROMPT_BASIC_INFO")
+# PROMPT_SUBTABLE = config.get("PROMPT", "PROMPT_SUBTABLE")
 
 
 def chatGPT_request(content, prompt=PROMPT_BASIC_INFO, token=CHATGPT_TOKEN):
