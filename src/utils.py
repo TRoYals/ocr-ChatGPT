@@ -28,21 +28,34 @@ from config import (
 # PROMPT_SUBTABLE = config.get("PROMPT", "PROMPT_SUBTABLE")
 
 
-def chatGPT_request(content, prompt=PROMPT_BASIC_INFO, token=CHATGPT_TOKEN):
+def chatGPT_request(
+    content, prompt=PROMPT_BASIC_INFO, token=CHATGPT_TOKEN, max_attempts=3
+):
     """
     使用 GPT-3.5-turbo 模型进行对话,
     传入的 content 为用户输入的内容
     """
     openai.api_key = token
     message = f"{prompt}\n{content}"
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "user", "content": message},
-        ],
-    )
-    answer = response.choices[0].message.content.strip()
-    return answer
+
+    for attempt in range(max_attempts):
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "user", "content": message},
+                ],
+            )
+            answer = response.choices[0].message.content.strip()
+            return answer
+
+        except Exception as e:
+            print(
+                f"Request failed with exception {e}. Attempt {attempt + 1} of {max_attempts}."
+            )
+            if attempt + 1 == max_attempts:
+                raise e
+            time.sleep(1)  # Optional: add a delay before retrying the request
 
 
 def extract_json_from_str(input_str):
