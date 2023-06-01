@@ -212,11 +212,6 @@ def change_header_with_dict(list, dict):
     return list
 
 
-def test():
-    if " ":
-        print("True")
-
-
 def seprate_xlsx(file_path):
     df = pd.read_excel(file_path, engine="openpyxl")
 
