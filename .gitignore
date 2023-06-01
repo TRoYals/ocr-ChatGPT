@@ -1,5 +1,5 @@
 config.ini
-user_file/
-static/
-output/
-temp/
+user_file/*
+static/*
+output/*
+temp/*
