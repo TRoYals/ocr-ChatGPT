@@ -1,10 +1,21 @@
-# 项目简介
+# About the Project
 
-使用 百度 ocr + ChatGPT api 实现表格数据/文字数据的录入
+Use baidu OCR Form api and ChatGPT api to extract FORM from the PDF.
+
+A sample project to serve as the first step to data anylsis.
+
+# How to use?
+
+1. text your ocr api and ChatGPT api in the config.ini
+2. put your pdf in the user_file folder.
+3. adjust your needed prompt in the config.ini
+4. simply run the src/main.py and you can see all the temp form in the temp folder and display form in the output folder.
 
 # 项目状态
 
 2023-05-30 10:34 基本满足最小实现要求, 确认需求后再继续改进
+
+2023-06-01 15:44 基本完成了，满足 zoe 的需求，但 ocr 识别上存在的问题还是蛮明显的，考虑要不要换 ocr 识别。
 
 # Todo
 
@@ -19,4 +30,4 @@
 - [x] 文本内容数据转换?
 - [x] 多 pdf 处理
 - [x] pdf 文件名抓取
-- [x] 数据验证
+- [ ] 数据验证
