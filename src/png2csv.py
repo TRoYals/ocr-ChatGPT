@@ -7,12 +7,13 @@ import base64
 import pandas as pd
 import time
 from utils import (
-    json_to_csv,
+    json_to_xlsx,
     combine_xlsx,
     get_text_from_xls_url,
     chatGPT_request,
     get_access_token,
     extract_json_from_str,
+    seprate_xlsx,
 )
 
 
@@ -32,7 +33,7 @@ def main():
     basic_info = chatGPT_request(text)
     json_data = extract_json_from_str(basic_info)
     print(json_data)
-    json_to_csv(json_data, os.path.join(output_folder, "basic_info.csv"))
+    json_to_xlsx(json_data, os.path.join(output_folder, "basic_info.xlsx"))
 
     return
 
@@ -79,6 +80,7 @@ def png_to_xlsx(
         header = df.columns.tolist()
         df = df[~df.eq(header).all(axis=1)]
         df.to_excel(output_csv_path, index=False)
+        seprate_xlsx(output_csv_path)
     if need_process_text:
         need_process_text += get_text_from_xls_url(dataurl)
         return need_process_text
@@ -88,4 +90,4 @@ def png_to_xlsx(
 
 
 if __name__ == "__main__":
-    main()
+    combine_xlsx(output_folder)

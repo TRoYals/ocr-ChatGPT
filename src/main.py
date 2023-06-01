@@ -11,6 +11,7 @@ def main():
     initialize(static_folder)
     pdf2png.main()
     png2csv.main()
+
     return
 
 

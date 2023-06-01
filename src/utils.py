@@ -7,6 +7,7 @@ import csv
 import pandas as pd
 import json
 import shutil
+from io import BytesIO
 from config import (
     API_KEY,
     SECRET_KEY,
@@ -17,16 +18,6 @@ from config import (
     CHATGPT_TOKEN,
 )
 import time
-
-# config = configparser.ConfigParser()
-# config.read(os.path.join(main_dir, "config.ini"), encoding="utf-8")
-
-# API_KEY = config.get("API", "API_KEY")
-# SECRET_KEY = config.get("API", "SECRET_KEY")
-# CHATGPT_TOKEN = config.get("API", "CHATGPT_TOKEN")
-
-# PROMPT_BASIC_INFO = config.get("PROMPT", "PROMPT_BASIC_INFO")
-# PROMPT_SUBTABLE = config.get("PROMPT", "PROMPT_SUBTABLE")
 
 
 def chatGPT_request(
@@ -98,9 +89,24 @@ def get_access_token():
         return None
 
 
+def json_to_xlsx(json_data, filename_path):
+    """
+    将 json 数据写入 xlsx 文件
+    """
+    df = pd.DataFrame(json_data, index=[0])  # 将json数据转换为DataFrame
+
+    if os.path.isfile(filename_path):
+        # 如果文件已存在，打开文件并追加数据
+        with pd.ExcelWriter(filename_path, engine="openpyxl", mode="a") as writer:
+            df.to_excel(writer, index=False, header=False)
+    else:
+        # 如果文件不存在，创建新文件并写入数据
+        df.to_excel(filename_path, index=False)
+
+
 def json_to_csv(json_data, filename_path):
     """
-    将 json 数据写入 csv 文件
+    将 json 数据写入 xlsx 文件
     """
     file_exists = os.path.isfile(filename_path)
     with open(filename_path, "a", newline="") as csv_file:
@@ -112,47 +118,36 @@ def json_to_csv(json_data, filename_path):
         writer.writerow(json_data)
 
 
-def combine_xlsx(folder_path, seperate=True):
-    if not seperate:
-        combined_data = pd.DataFrame()
+def combine_xlsx(folder_path):
+    combined_datas = []
+    files = os.listdir(folder_path)
+    for file in files:
+        if file.endswith(".xlsx"):
+            file_path = os.path.join(folder_path, file)
+            page_df = pd.read_excel(file_path, engine="openpyxl")
+            if not combined_datas:
+                combined_datas.append(page_df)
+                continue
 
-        files = os.listdir(folder_path)
-        for file in files:
-            if file.endswith(".xlsx"):
-                file_path = os.path.join(folder_path, file)
-                page_df = pd.read_excel(file_path, engine="openpyxl")
-                combined_data = pd.concat([combined_data, page_df], ignore_index=True)
+            found_match = False
+            for i, combined in enumerate(combined_datas):
+                # If the columns match, append to the dataframe and set the flag
+                if (
+                    len(combined.columns) == len(page_df.columns)
+                    and (combined.columns == page_df.columns).all()
+                ):
+                    combined_datas[i] = pd.concat(
+                        [combined, page_df], ignore_index=True
+                    )
+                    found_match = True
+                    break
 
-        combined_data.to_excel(os.path.join(folder_path, "combined.xlsx"), index=False)
+            if not found_match:
+                combined_datas.append(page_df)
 
-    else:
-        combined_datas = []  # List of dataframes
-        files = os.listdir(folder_path)
-        for file in files:
-            if file.endswith(".xlsx"):
-                file_path = os.path.join(folder_path, file)
-                page_df = pd.read_excel(file_path, engine="openpyxl")
-
-                # Loop through the combined_datas
-                for combined in combined_datas:
-                    # If the columns match, append to the dataframe and break the loop
-                    if (
-                        len(combined.columns) == len(page_df.columns)
-                        and (combined.columns == page_df.columns).all()
-                    ):
-                        combined = pd.concat([combined, page_df], ignore_index=True)
-                        break
-                # If no matching dataframe is found, create a new one
-                else:
-                    combined_datas.append(page_df)
-
-        # Save each dataframe to a separate excel file
-        for i, combined in enumerate(combined_datas, 1):
-            combined.to_excel(
-                os.path.join(folder_path, f"combined_{i}.xlsx"), index=False
-            )
-
-    return
+    # Save each dataframe to a separate excel file
+    for i, combined in enumerate(combined_datas, 1):
+        combined.to_excel(os.path.join(folder_path, f"combined_{i}.xlsx"), index=False)
 
 
 def get_text_from_xls_url(url):
@@ -160,10 +155,26 @@ def get_text_from_xls_url(url):
     从 xls 文件的 url 中获取文本
     """
     response = requests.get(url)
-    df_header = pd.read_excel(response.content, sheet_name="header")
-    df_flat_text = "###".join(df_header.to_string(index=False).split("\n"))
-    df_footer = pd.read_excel(response.content, sheet_name="footer")
-    df_flat_text += "###".join(df_footer.to_string(index=False).split("\n"))
+    content = response.content
+
+    df_flat_text = ""
+
+    try:
+        df_header = pd.read_excel(BytesIO(content), sheet_name="header")
+        # 如果header不为空，加入到df_flat_text中
+        if not df_header.empty:
+            df_flat_text += "###".join(df_header.to_string(index=False).split("\n"))
+    except Exception as e:
+        print(f"Error while reading 'header' sheet: {e}")
+
+    try:
+        df_footer = pd.read_excel(BytesIO(content), sheet_name="footer")
+        # 如果footer不为空，加入到df_flat_text中
+        if not df_footer.empty:
+            df_flat_text += "###".join(df_footer.to_string(index=False).split("\n"))
+    except Exception as e:
+        print(f"Error while reading 'footer' sheet: {e}")
+
     return df_flat_text
 
 
@@ -180,9 +191,67 @@ def initialize(file_path):
     return
 
 
+def change_header_with_dict(list, dict):
+    """
+    用字典替换列表中的元素
+    """
+    for i in range(len(list)):
+        if list[i] in dict.keys():
+            list[i] = dict[list[i]]
+    return list
+
+
 def test():
     if " ":
         print("True")
+
+
+def seprate_xlsx(file_path):
+    df = pd.read_excel(file_path, engine="openpyxl")
+
+    # 确保所有的列名都是字符串类型
+    df.columns = df.columns.astype(str)
+
+    # 初始化列表，用于保存拆分出的子表格
+    tables = []
+
+    # 设置循环，最大迭代次数为原始表格的行数（保证不会陷入无限循环）
+    for i in range(df.shape[0]):
+        # 检查是否还存在以"Unnamed"开头的列
+        unnamed_cols = [col for col in df.columns if "Unnamed" in col]
+        if not unnamed_cols:
+            # 如果不存在，将剩余的表格添加到列表中并跳出循环
+            df = df.dropna(axis=1, how="all")
+            tables.append(df)
+            break
+
+        # 查找第一个"Unnamed"列下的第一个非空元素的位置
+        for col in unnamed_cols:
+            split_row = df[col].first_valid_index()
+            if split_row is not None:
+                break
+
+        # 按照找到的行号将表格分成两部分，并将第一部分（新的子表格）添加到列表中
+        new_table = df.iloc[:split_row].copy()
+        new_table.dropna(axis=1, how="all", inplace=True)
+        tables.append(new_table)
+
+        # 更新df为剩下的部分
+        df = df.iloc[split_row:].copy()
+
+        # 将新的表头行设为表头，并确保所有的列名都是字符串类型
+        df.columns = df.iloc[0].astype(str)
+        df = df[1:]
+        # 将所有子表格保存为新的Excel文件
+        # 将所有子表格保存为新的Excel文件
+    for i, table in enumerate(tables, start=0):
+        filename, file_extension = os.path.splitext(os.path.basename(file_path))
+        if i == 0:
+            new_filename = f"{filename}{file_extension}"
+        else:
+            new_filename = f"{filename}-{i}{file_extension}"
+        new_file_path = os.path.join(os.path.dirname(file_path), new_filename)
+        table.to_excel(new_file_path, index=False)
 
 
 def main():
@@ -195,5 +264,4 @@ def main():
 
 
 if __name__ == "__main__":
-    # combine_xlsx(output_folder)
-    gpt_change_file_header(os.path.join(output_folder, "combined_1.xlsx"))
+    combine_xlsx(output_folder)
