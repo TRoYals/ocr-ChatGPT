@@ -1,7 +1,14 @@
 config.ini
 user_file/*
+!user_file/.gitkeep
+
 static/*
+!static/.gitkeep
+
 output/*
+!output/.gitkeep
+
 temp/*
+!temp/.gitkeep
 temp_file
 .Ds_Store
