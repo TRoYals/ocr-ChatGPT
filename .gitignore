@@ -3,3 +3,4 @@ user_file/*
 static/*
 output/*
 temp/*
+temp_file
