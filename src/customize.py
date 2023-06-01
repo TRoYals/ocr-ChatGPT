@@ -98,7 +98,7 @@ def merge_excel(path):
         df = pd.read_excel(os.path.join(path, file))
 
         # 将当前Excel文件的数据合并到总体数据中
-        merged_data = merged_data.append(df, ignore_index=True)
+        merged_data = pd.concat([merged_data,df])
     merged_data.to_excel(os.path.join(path, "merged.xlsx"), index=False)
 
 
