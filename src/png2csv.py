@@ -32,6 +32,11 @@ def main():
     combine_xlsx(output_folder)
     basic_info = chatGPT_request(text)
     json_data = extract_json_from_str(basic_info)
+    attempt = 0
+    while json_data == {} and attempt < 3:
+        basic_info = chatGPT_request(text)
+        json_data = extract_json_from_str(basic_info)
+        attempt += 1
     print(json_data)
     json_to_xlsx(json_data, os.path.join(output_folder, "basic_info.xlsx"))
 
@@ -90,4 +95,4 @@ def png_to_xlsx(
 
 
 if __name__ == "__main__":
-    combine_xlsx(output_folder)
+    main()
