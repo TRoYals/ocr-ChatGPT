@@ -29,7 +29,7 @@ def chatGPT_request(
     """
     openai.api_key = token
     message = f"{prompt}\n{content}"
-    with open(os.path.join(output_folder, "message.txt"), "w") as file:
+    with open(os.path.join(output_folder, "message.txt"), "a") as file:
         file.write(message)
     for attempt in range(max_attempts):
         try:
@@ -40,7 +40,7 @@ def chatGPT_request(
                 ],
             )
             answer = response.choices[0].message.content.strip()
-            with open(os.path.join(output_folder, "answer.txt"), "w") as file:
+            with open(os.path.join(output_folder, "answer.txt"), "a") as file:
                 file.write(answer)
             return answer
 
@@ -120,7 +120,7 @@ def json_to_csv(json_data, filename_path):
 
 def combine_xlsx(folder_path):
     combined_datas = []
-    files = os.listdir(folder_path)
+    files = sorted(os.listdir(folder_path))
     for file in files:
         if file.endswith(".xlsx"):
             file_path = os.path.join(folder_path, file)
@@ -176,6 +176,17 @@ def get_text_from_xls_url(url):
         print(f"Error while reading 'footer' sheet: {e}")
 
     return df_flat_text
+
+
+def remove_table_with_header(path, clean_header):
+    df = pd.read_excel(path)
+    if isinstance(clean_header, list):
+        df = df.drop(columns=[col for col in clean_header if col in df.columns])
+    elif isinstance(clean_header, str):
+        if clean_header in df.columns:
+            df = df.drop(columns=clean_header)
+    df.to_excel(path, index=False)
+    return path
 
 
 def initialize(file_path):

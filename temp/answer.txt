@@ -1,0 +1,17 @@
+{
+  "date": "2023-02-20",
+  "reference_no": "SM422/FEB/CW",
+  "contact_person": "James",
+  "email": "co-loading@speedmark.com.sg"
+}{
+    "Origin Code": "origin_code",
+    "DestinationCode": "destination_code",
+    "RouteSegment": "na",
+    "PriceClass": "price_class",
+    "Min": "min_value",
+    "1": 1,
+    "45": 45,
+    "100": 100,
+    "250": 250,
+    "500": 500
+}

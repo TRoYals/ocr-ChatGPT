@@ -1,6 +1,0 @@
-{
-  "date": "2023-02-20",
-  "reference_no": "SM422/FEB/CW",
-  "contact_person": "James",
-  "email": "co-loading@speedmark.com.sg"
-}

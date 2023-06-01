@@ -4,7 +4,9 @@ import configparser
 
 current_file_dir = os.path.dirname(os.path.abspath(__file__))
 main_dir = os.path.dirname(current_file_dir)
-output_folder = os.path.join(main_dir, "output")
+output_folder = os.path.join(main_dir, "temp")
+display_folder = os.path.join(main_dir, "output")
+
 static_folder = os.path.join(main_dir, "static")
 user_file_folder = os.path.join(main_dir, "user_file")
 
