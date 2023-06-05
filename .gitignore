@@ -11,4 +11,7 @@ output/*
 temp/*
 !temp/.gitkeep
 temp_file
-.Ds_Store
+
+.DS_Store
+
+src/__pycache__/*
