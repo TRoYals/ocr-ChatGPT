@@ -16,10 +16,14 @@ from utils import (
 def extract_numbers_from_list(lst):
     result = []
     for element in lst:
-        if any(char.isdigit() for char in element):
-            number = "".join(char for char in element if char.isdigit())
-            result.append(int(number))
+        if isinstance(element, str):
+            if any(char.isdigit() for char in element):
+                number = "".join(char for char in element if char.isdigit())
+                result.append(int(number))
+            else:
+                result.append(element)
         else:
+            # 如果元素不是字符串，直接添加到结果列表中
             result.append(element)
     return result
 
@@ -40,7 +44,8 @@ def change_header(path, prompt, new_path=False):
     headers = extract_numbers_from_list(headers)
     headers_mapped = gpt_get_mapped_header(headers, prompt)
     df.columns = headers_mapped
-    df = df.drop(columns="na")
+    if "na" in df.columns:
+        df = df.drop(columns="na")
     if new_path:
         df.to_excel(new_path, index=False)
     else:
@@ -78,16 +83,20 @@ def excel_format_zoe_need_step2(path, info_path, file_name):
     """
     合并两个表
     """
-    target_df = pd.read_excel(path, engine="openpyxl")
-    info_df = pd.read_excel(info_path, engine="openpyxl")
-    date, reference_no, contact_person, email = info_df.iloc[0]
-    target_df["date"] = date
-    target_df["reference_no"] = reference_no
-    target_df["contact_person"] = contact_person
-    target_df["email"] = email
-    target_df["vender_name"] = file_name
-    target_df.to_excel(path, index=False)
-    return
+    try:
+        target_df = pd.read_excel(path, engine="openpyxl")
+        info_df = pd.read_excel(info_path, engine="openpyxl")
+        if info_df.empty:
+            print("Info table is empty.")
+            return
+        info_data = info_df.iloc[0]
+        for col in info_df.columns:
+            target_df[col] = info_data[col]
+        target_df["vender_name"] = file_name
+        target_df.to_excel(path, index=False)
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return
 
 
 def merge_excel(path):
@@ -98,7 +107,7 @@ def merge_excel(path):
         df = pd.read_excel(os.path.join(path, file))
 
         # 将当前Excel文件的数据合并到总体数据中
-        merged_data = pd.concat([merged_data,df])
+        merged_data = pd.concat([merged_data, df])
     merged_data.to_excel(os.path.join(path, "merged.xlsx"), index=False)
 
 
@@ -114,9 +123,10 @@ def main():
     excel_format_zoe_need_step2(
         os.path.join(output_folder, "formatted.xlsx"),
         os.path.join(output_folder, "basic_info.xlsx"),
+        "test",
     )
     return
 
 
 if __name__ == "__main__":
-    merge_excel(os.path.join(main_dir, "output2"))
+    main()
