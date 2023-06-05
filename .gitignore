@@ -1,4 +1,5 @@
 config.ini
+config2.ini
 user_file/*
 !user_file/.gitkeep
 
@@ -11,7 +12,3 @@ output/*
 temp/*
 !temp/.gitkeep
 temp_file
-
-.DS_Store
-
-src/__pycache__/*
