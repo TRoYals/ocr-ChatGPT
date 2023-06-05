@@ -29,11 +29,11 @@ def main():
                 text,
             )
 
-    combine_xlsx(output_folder)
+    combine_xlsx(output_folder, 0.9)
     basic_info = chatGPT_request(text)
     json_data = extract_json_from_str(basic_info)
     attempt = 0
-    while json_data == {} and attempt < 3:
+    while json_data == {} and attempt < 4:
         basic_info = chatGPT_request(text)
         json_data = extract_json_from_str(basic_info)
         attempt += 1
@@ -68,7 +68,7 @@ def png_to_xlsx(
     print(result)
     attempts = 0
     while result.get("result", {}).get("ret_msg") != "已完成":
-        if attempts < 3:
+        if attempts < 5:
             time.sleep(2)
             res = requests.post(url, data=params, headers=headers)
             result = res.json()

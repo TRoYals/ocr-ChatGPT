@@ -18,6 +18,7 @@ from config import (
     CHATGPT_TOKEN,
 )
 import time
+import difflib
 
 
 def chatGPT_request(
@@ -118,7 +119,7 @@ def json_to_csv(json_data, filename_path):
         writer.writerow(json_data)
 
 
-def combine_xlsx(folder_path):
+def combine_xlsx(folder_path, match_accuracy=0.9):
     combined_datas = []
     files = sorted(os.listdir(folder_path))
     for file in files:
@@ -131,11 +132,15 @@ def combine_xlsx(folder_path):
 
             found_match = False
             for i, combined in enumerate(combined_datas):
-                # If the columns match, append to the dataframe and set the flag
-                if (
-                    len(combined.columns) == len(page_df.columns)
-                    and (combined.columns == page_df.columns).all()
-                ):
+                # Calculate the total accuracy of the table headers
+                total_accuracy = sum(
+                    difflib.SequenceMatcher(None, col1, col2).ratio()
+                    for col1, col2 in zip(combined.columns, page_df.columns)
+                ) / len(combined.columns)
+
+                # If the total accuracy is greater than or equal to the specified accuracy, append to the dataframe and set the flag
+                if total_accuracy >= match_accuracy:
+                    page_df.columns = combined.columns
                     combined_datas[i] = pd.concat(
                         [combined, page_df], ignore_index=True
                     )
@@ -270,4 +275,4 @@ def main():
 
 
 if __name__ == "__main__":
-    combine_xlsx(output_folder)
+    combine_xlsx(output_folder, 0.9)
