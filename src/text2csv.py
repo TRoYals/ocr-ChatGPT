@@ -1,5 +1,11 @@
-from utils import get_access_token, chatGPT_request, PROMPT_SUBTABLE, json_to_csv
-from config import output_folder, static_folder
+from utils import (
+    get_access_token,
+    chatGPT_request,
+    json_to_xlsx,
+    initialize,
+)
+from pdf2png import pdf_to_images
+from config import output_folder, static_folder, user_file_folder, PROMPT_INVOICE_INFO
 import os
 import base64
 import requests
@@ -38,79 +44,21 @@ def jpg_to_para(
 
 
 def main():
+    initialize(output_folder)
+    initialize(static_folder)
     token = get_access_token()
+    for file in os.listdir(user_file_folder):
+        pdf_to_images(os.path.join(user_file_folder, file), static_folder)
     for file in os.listdir(static_folder):
         if file.endswith(".jpg") or file.endswith(".png"):
             text = jpg_to_para(token, os.path.join(static_folder, file), "")
         print(text)
-        print(PROMPT_SUBTABLE)
-        chat_answer = chatGPT_request(text, PROMPT_SUBTABLE)
+        chat_answer = chatGPT_request(text, PROMPT_INVOICE_INFO)
         print(chat_answer)
         data = json.loads(chat_answer)
-        for item in data["products"]:
-            json_to_csv(item, os.path.join(output_folder, "subtable.csv"))
+        json_to_xlsx(data, os.path.join(output_folder, file[:-3] + "xlsx"))
+
     return
-
-
-def test():
-    # 给定的字符串
-    data_string = """
-    {
-    "products": [
-        {
-            "index": 1,
-            "product_id": "P0-PROW2303-0323",
-            "description": "64 PK BELLY A B/L R/L W SOFTBONES SINGLE RIBBED",
-            "packing": "1 PK",
-            "weight": "52.32 KGM",
-            "unit_price": 8,
-            "value": 418.56
-        },
-        {
-            "index": 2,
-            "product_id": "PK10000910",
-            "description": "67 PK ASC LOIN B/L MULTI",
-            "packing": "21.42 KGM",
-            "weight": "21.42 KGM",
-            "unit_price": 4.6,
-            "value": 98.53
-        },
-        {
-            "index": 3,
-            "product_id": "PK10001257",
-            "description": "68 PK SPARERIBS IWP 20KG/CTN FRIMESA BRZ",
-            "packing": "31 KGM",
-            "weight": "31 KGM",
-            "unit_price": 4.9,
-            "value": 151.9
-        },
-        {
-            "index": 4,
-            "product_id": "BV10003628",
-            "description": "72 BF RIBEYE MONDELLI BRZ Halal",
-            "packing": "22.472 KGM",
-            "weight": "22.472 KGM",
-            "unit_price": 11.8,
-            "value": 265.17
-        },
-        {
-            "index": 5,
-            "product_id": "BV10004408",
-            "description": "73 BE SHIN/SHANK MINERVA BRZ Halal",
-            "packing": "30.58 KGM",
-            "weight": "30.58 KGM",
-            "unit_price": 6.8,
-            "value": 207.94
-        }
-    ]
-    }
-    """
-
-    # 将字符串转换为JSON数据
-    data = json.loads(data_string)
-
-    # 打印JSON数据
-    print(data["products"])
 
 
 if __name__ == "__main__":
