@@ -18,17 +18,27 @@ from utils import (
 
 
 def main():
-    access_token = get_access_token()
+    access_token = get_access_token(1)
     text = " "
     for file in os.listdir(static_folder):
         if file.endswith(".jpg") or file.endswith(".png"):
-            text = png_to_xlsx(
-                access_token,
-                os.path.join(static_folder, file),
-                os.path.join(output_folder, file[:-3] + "xlsx"),
-                text,
-            )
-
+            try:
+                text = png_to_xlsx(
+                    access_token,
+                    os.path.join(static_folder, file),
+                    os.path.join(output_folder, file[:-3] + "xlsx"),
+                    text,
+                )
+                print("The quota for token 1 has been used up.")
+            except Exception as e:
+                print(f"Error in processing file {file}: {e}, we now use another Token")
+                access_token = get_access_token(2)
+                text = png_to_xlsx(
+                    access_token,
+                    os.path.join(static_folder, file),
+                    os.path.join(output_folder, file[:-3] + "xlsx"),
+                    text,
+                )
     combine_xlsx(output_folder, 0.9)
     basic_info = chatGPT_request(text)
     json_data = extract_json_from_str(basic_info)

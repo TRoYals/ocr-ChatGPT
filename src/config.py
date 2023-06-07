@@ -15,6 +15,8 @@ config.read(os.path.join(main_dir, "config.ini"), encoding="utf-8")
 
 API_KEY = config.get("API", "API_KEY")
 SECRET_KEY = config.get("API", "SECRET_KEY")
+API_KEY_2 = config.get("API", "API_KEY_2")
+SECRET_KEY_2 = config.get("API", "SECRET_KEY_2")
 CHATGPT_TOKEN = config.get("API", "CHATGPT_TOKEN")
 
 PROMPT_BASIC_INFO = config.get("PROMPT", "PROMPT_BASIC_INFO")

@@ -11,6 +11,8 @@ from io import BytesIO
 from config import (
     API_KEY,
     SECRET_KEY,
+    API_KEY_2,
+    SECRET_KEY_2,
     output_folder,
     static_folder,
     PROMPT_BASIC_INFO,
@@ -74,19 +76,26 @@ def extract_json_from_str(input_str):
     return json_data
 
 
-def get_access_token():
+def get_access_token(id=1):
     url = "https://aip.baidubce.com/oauth/2.0/token"
+    if id== 1: 
+        api_key = API_KEY,
+        secret_key = SECRET_KEY,
+    elif id==2:
+        api_key = API_KEY_2,
+        secret_key = SECRET_KEY_2
     params = {
         "grant_type": "client_credentials",
-        "client_id": API_KEY,
-        "client_secret": SECRET_KEY,
+        "client_id": api_key,
+        "client_secret": secret_key,
     }
     r = requests.get(url, params=params)
-    print(r.status_code)
     if r.status_code == 200:
+        print(str(r.status_code)+" server connected")
         print(r.json()["access_token"])
         return r.json()["access_token"]
     else:
+        print("server connected ERROR")
         return None
 
 
