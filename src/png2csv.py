@@ -52,8 +52,6 @@ def main():
     return
 
 
-def process_raw_table():
-    return
 
 
 def png_to_xlsx(
