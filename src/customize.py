@@ -9,7 +9,6 @@ from utils import (
     chatGPT_request,
     change_header_with_dict,
     extract_json_from_str,
-    remove_table_with_header,
 )
 
 
