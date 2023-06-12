@@ -30,7 +30,7 @@ def main():
                     text,
                 )
             except Exception as e:
-                print(f"Error in processing file {file}: {e}, we now use another Token")
+                print(f"Error in processing file {file}: {e}, change Token")
                 access_token = get_access_token(2)
                 text = png_to_xlsx(
                     access_token,
